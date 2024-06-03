@@ -10,7 +10,7 @@ The Miner project aims to create a decentralized mining platform using smart con
 
 To get started with the Miner Contracts, follow these steps:
 
-1. Clone this repository: `git clone https://github.com/haya/miner-contracts.git`
+1. Clone this repository: `git clone https://github.com/haya-finance/haya-miner-contracts`
 2. Install the required dependencies: `npm install`
 3. Compile the smart contracts: `npm run compile`
 4. Test the smart contracts: `npm run test`
