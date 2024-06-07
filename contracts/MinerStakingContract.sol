@@ -20,7 +20,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
     /**
      * @dev Maximum mining time allowed for staking.
      */
-    uint256 public constant MAX_MINING_TIME = 3 days;
+    uint256 public constant MAX_MINING_TIME = 365 days;
 
     /**
      * @dev Interface for the ERC1155 miner contract.
