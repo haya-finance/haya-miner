@@ -17,6 +17,9 @@ const config: HardhatUserConfig = {
   },
   networks: {
     sepolia: {
+      accounts: process.env.ARBITRUM_SEPOLIA_DEPLOY_PRIVATE_KEY
+        ? [`0x${process.env.ARBITRUM_SEPOLIA_DEPLOY_PRIVATE_KEY}`]
+        : undefined,
       url: "https://arbitrum-sepolia.infura.io/v3/" + process.env.INFURA_TOKEN,
     },
     production: {
