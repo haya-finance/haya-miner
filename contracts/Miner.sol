@@ -27,6 +27,17 @@ contract Miner is ERC1155, Ownable2Step {
      */
     address public factory;
 
+
+    /**
+     * @dev The name of the miner.
+     */
+    string public name;
+
+    /**
+     * @dev Public variable representing the symbol of the contract.
+     */
+    string public symbol;
+
     /**
      * @dev Enum representing the different types of Haya Miners.
      * Mini: Represents a Mini Miner.
@@ -55,7 +66,8 @@ contract Miner is ERC1155, Ownable2Step {
      * @param _owner The address of the contract owner.
      */
     constructor(string memory _uri, address _owner) ERC1155(_uri) Ownable(_owner) {
-
+        name = "Haya Miner";
+        symbol = "HMINER";
     }
 
     /**
