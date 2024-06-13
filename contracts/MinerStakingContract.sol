@@ -180,10 +180,10 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
         startTime  = config.startTime;
         endTime = config.endTime;
         _addOutputFactorNoCheck(block.timestamp, config.outputFactor);
-        hashRates[MinerType.Mini] = 1_000;
-        hashRates[MinerType.Bronze] = 10_100;
-        hashRates[MinerType.Silver] = 102_000;
-        hashRates[MinerType.Gold] = 1_040_000;
+        hashRates[MinerType.Mini] = 10_000;
+        hashRates[MinerType.Bronze] = 100_000;
+        hashRates[MinerType.Silver] = 1005_000;
+        hashRates[MinerType.Gold] = 10_010_000;
     }
 
     /**
