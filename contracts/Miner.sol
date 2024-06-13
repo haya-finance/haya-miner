@@ -3,12 +3,16 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {AddressArrayUtils} from "./lib/AddressArrayUtils.sol";
 
 /**
  * @title Miner
  * @dev This contract represents a Haya Miner, which is used to mine Haya tokens.
 */
 contract Miner is ERC1155, Ownable2Step {
+
+
+    using AddressArrayUtils for address[];
 
     /**
      * @dev Mapping to store the total supply of tokens for each ID.
@@ -25,8 +29,7 @@ contract Miner is ERC1155, Ownable2Step {
     /**
      * @dev The address of the factory contract that creates Haya Miners.
      */
-    address public factory;
-
+    address[] public factories;
 
     /**
      * @dev The name of the miner.
@@ -53,12 +56,16 @@ contract Miner is ERC1155, Ownable2Step {
     }
 
     /**
-     * @dev Emitted when the factory address is updated.
-     * 
-     * @param oldFactory The address of the old factory contract.
-     * @param newFactory The address of the new factory contract.
+     * @dev Emitted when a new factory is added.
+     * @param newFactory The address of the new factory.
      */
-    event FactoryUpdated(address indexed oldFactory, address indexed newFactory);
+    event FactoryAdded(address indexed newFactory);
+
+    /**
+     * @dev Emitted when a factory is removed.
+     * @param factory The address of the removed factory.
+     */
+    event FactoryRemoved(address indexed factory);
 
     /**
      * @dev Constructor function for the HayaMiner contract.
@@ -81,20 +88,34 @@ contract Miner is ERC1155, Ownable2Step {
      * @param amount The amount of tokens to be minted.
      * @param data Additional data to be passed during the minting process.
      */
-    function mint(address account, uint256 id, uint256 amount, bytes memory data) public {
-        require(msg.sender == factory, "Miner: only factory");
+    function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyFactory() {
         _mint(account, id, amount, data);
     }
 
     /**
-     * @dev Sets the address of the factory contract.
-     * Can only be called by the contract owner.
-     * @param _factory The address of the factory contract.
+     * @dev Adds a new factory address to the list of factories.
+     * @param _factory The address of the factory to be added.
+     * @notice Only the contract owner can call this function.
+     * @notice The factory address must not already exist in the list of factories.
+     * @notice Emits a `FactoryAdded` event.
      */
+    function addFactory(address _factory) external onlyOwner {
+        require(factories.contains(_factory) == false, "Miner: factory already exists");
+        factories.push(_factory);
+        emit FactoryAdded(_factory);
+    }
 
-    function setFactory(address _factory) external onlyOwner {
-        factory = _factory;
-        emit FactoryUpdated(factory, _factory);
+    /**
+     * @dev Removes a factory from the list of registered factories.
+     * @param _factory The address of the factory to be removed.
+     * @notice Only the contract owner can call this function.
+     * @notice The factory must exist in the list of registered factories.
+     * @notice Emits a `FactoryRemoved` event upon successful removal.
+     */
+    function removeFactory(address _factory) external onlyOwner {
+        require(factories.contains(_factory), "Miner: factory does not exist");
+        factories.removeStorage(_factory);
+        emit FactoryRemoved(_factory);
     }
 
     /**
@@ -192,5 +213,10 @@ contract Miner is ERC1155, Ownable2Step {
      */
     receive() external payable {
         revert();
+    }
+
+    modifier onlyFactory() {
+        require(factories.contains(msg.sender), "Miner: caller is not a factory");
+        _;
     }
 }

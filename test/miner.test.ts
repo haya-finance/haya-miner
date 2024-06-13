@@ -30,10 +30,10 @@ describe("Miner", function () {
     );
 
     // Set the factory
-    await miner.write.setFactory([factory.account.address]);
+    await miner.write.addFactory([factory.account.address]);
 
     // Verify the factory
-    const factoryAddress = await miner.read.factory();
+    const factoryAddress = await miner.read.factories([0n]);
     expect(factoryAddress).to.equal(getAddress(factory.account.address));
   });
 
@@ -43,7 +43,7 @@ describe("Miner", function () {
     );
 
     // Set the factory
-    await miner.write.setFactory([factory.account.address]);
+    await miner.write.addFactory([factory.account.address]);
 
     // Mint tokens
     await miner.write.mint([owner.account.address, 0n, 1n, "0x"], {
@@ -60,7 +60,7 @@ describe("Miner", function () {
       deployMinerContractFixture
     );
     await expect(
-      miner.write.setFactory([factory.account.address], {
+      miner.write.addFactory([factory.account.address], {
         account: factory.account,
       })
     ).to.be.rejected;
@@ -71,13 +71,13 @@ describe("Miner", function () {
       deployMinerContractFixture
     );
     // Set the factory
-    await miner.write.setFactory([factory.account.address]);
+    await miner.write.addFactory([factory.account.address]);
     // Mint tokens as non-owner
     await expect(
       miner.write.mint([owner.account.address, 0n, 1n, "0x"], {
         account: owner.account,
       })
-    ).to.be.rejectedWith("Miner: only factory");
+    ).to.be.rejectedWith("Miner: caller is not a factory");
   });
 
   it("should allow the owner to transfer ownership", async function () {
@@ -85,7 +85,7 @@ describe("Miner", function () {
       deployMinerContractFixture
     );
     // Set the factory
-    await miner.write.setFactory([factory.account.address]);
+    await miner.write.addFactory([factory.account.address]);
     // Transfer ownership
     await miner.write.transferOwnership([factory.account.address]);
     await miner.write.acceptOwnership({ account: factory.account });
