@@ -228,11 +228,11 @@ interface IMinerStakingContract {
      * @dev Calculates the rewards based on the given parameters.
      * @param _hashRate The hash rate of the miner.
      * @param _recentAdjustIndex The recent adjustment index.
-     * @param _lastTimestamp The last timestamp of the miner.
+     * @param _latestClaimedTime The last timestamp of the user claim.
      * @param _targetTimestamp The target timestamp for the rewards calculation.
      * @return The calculated rewards and the new adjustment index.
      */
-    function caculateRewards(uint256 _hashRate, uint256 _recentAdjustIndex, uint256 _lastTimestamp, uint256 _targetTimestamp) external view returns (uint256, uint256);
+    function caculateRewards(uint256 _hashRate, uint256 _recentAdjustIndex, uint256 _latestClaimedTime, uint256 _targetTimestamp) external view returns (uint256, uint256);
 
     /**
      * @dev Returns the start time of the staking contract.

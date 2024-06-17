@@ -464,20 +464,20 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
     function _calculateRewards(address _account, uint256 _minerIndex, uint256 _targetTimestamp) internal view returns (uint256, uint256) {
         MiningStatus memory status = miningStatuses[_account][_minerIndex];
         require(_targetTimestamp <= status.endTime && _targetTimestamp > status.latestClaimedTime, "MinerStakingContract: Invalid target timestamp");
-        uint256 lastTimestamp = status.latestClaimedTime;
+        uint256 latestClaimedTime = status.latestClaimedTime;
         uint256 hashRate = hashRates[status.minerType];
-        return caculateRewards(hashRate, status.recentAdjustIndex, lastTimestamp, _targetTimestamp);
+        return caculateRewards(hashRate, status.recentAdjustIndex, latestClaimedTime, _targetTimestamp);
     }
 
     /**
      * @dev Calculates the rewards based on the given parameters.
      * @param _hashRate The hash rate of the miner.
      * @param _recentAdjustIndex The index of the most recent adjustment record.
-     * @param _lastTimestamp The timestamp of the last adjustment record.
+     * @param _latestClaimedTime The timestamp of user claimed.
      * @param _targetTimestamp The target timestamp to calculate rewards until.
      * @return The index of the last adjustment record processed and the total rewards earned.
      */
-    function caculateRewards(uint256 _hashRate, uint256 _recentAdjustIndex, uint256 _lastTimestamp, uint256 _targetTimestamp) public view returns (uint256, uint256) {
+    function caculateRewards(uint256 _hashRate, uint256 _recentAdjustIndex, uint256 _latestClaimedTime, uint256 _targetTimestamp) public view returns (uint256, uint256) {
         uint256 rewards = 0;
         uint256 occurredLatestIndex = getOccurredOutputFactorsLength() - 1;
         for (uint256 i = _recentAdjustIndex; i <= occurredLatestIndex; i++) {
@@ -485,14 +485,14 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
             if (i < occurredLatestIndex) {
                 AdjustRecord memory nextRecord = adjustRecords[i + 1];
                 if (nextRecord.timestamp > _targetTimestamp) {
-                    rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _lastTimestamp);
+                    rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _latestClaimedTime);
                     return (i, rewards);
                 }
-                rewards += rewardByHashRate(_hashRate, record.outputFactor, nextRecord.timestamp - _lastTimestamp);
-                _lastTimestamp = nextRecord.timestamp;
+                rewards += rewardByHashRate(_hashRate, record.outputFactor, nextRecord.timestamp - _latestClaimedTime);
+                _latestClaimedTime = nextRecord.timestamp;
             }
             if (i == occurredLatestIndex) {
-                rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _lastTimestamp);
+                rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _latestClaimedTime);
             }
         }
         return (occurredLatestIndex, rewards);
