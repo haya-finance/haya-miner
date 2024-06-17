@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title MinerStakingContract
@@ -20,7 +19,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
     /**
      * @dev Maximum mining time allowed for staking.
      */
-    uint256 public constant MAX_MINING_TIME = 365 days;
+    uint256 public constant MAX_MINING_TIME = 180 days;
 
     /**
      * @dev Interface for the ERC1155 miner contract.
@@ -121,7 +120,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
 
     /**
      * @dev Emitted when a miner starts staking.
-     * @param miner The address of the miner.
+     * @param miner The address of the user.
      * @param minerType The type of the miner.
      */
     event MinerStarted(address indexed miner, MinerType indexed minerType);
@@ -170,7 +169,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      * It sets the owner, miner contract, rewards pool, start time, and end time.
      * @param config The configuration for the staking contract.
      */
-    function initialize(LaunchConfig calldata config) public initializer() {
+    function initialize(LaunchConfig calldata config) public initializer {
         __Ownable_init(config.owner);
         __Pausable_init();
         __ReentrancyGuard_init();
@@ -182,8 +181,8 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
         _addOutputFactorNoCheck(block.timestamp, config.outputFactor);
         hashRates[MinerType.Mini] = 10_000;
         hashRates[MinerType.Bronze] = 100_000;
-        hashRates[MinerType.Silver] = 1005_000;
-        hashRates[MinerType.Gold] = 10_010_000;
+        hashRates[MinerType.Silver] = 1_005_000;
+        hashRates[MinerType.Gold] = 10_100_000;
     }
 
     /**
@@ -465,24 +464,35 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
     function _calculateRewards(address _account, uint256 _minerIndex, uint256 _targetTimestamp) internal view returns (uint256, uint256) {
         MiningStatus memory status = miningStatuses[_account][_minerIndex];
         require(_targetTimestamp <= status.endTime && _targetTimestamp > status.latestClaimedTime, "MinerStakingContract: Invalid target timestamp");
-        uint256 rewards = 0;
         uint256 lastTimestamp = status.latestClaimedTime;
-        uint256 occurredLatestIndex = getOccurredOutputFactorsLength() - 1;
         uint256 hashRate = hashRates[status.minerType];
-        for (uint256 i = status.recentAdjustIndex; i <= occurredLatestIndex; i++) {
-            AdjustRecord memory record = adjustRecords[i];
+        return caculateRewards(hashRate, status.recentAdjustIndex, lastTimestamp, _targetTimestamp);
+    }
 
+    /**
+     * @dev Calculates the rewards based on the given parameters.
+     * @param _hashRate The hash rate of the miner.
+     * @param _recentAdjustIndex The index of the most recent adjustment record.
+     * @param _lastTimestamp The timestamp of the last adjustment record.
+     * @param _targetTimestamp The target timestamp to calculate rewards until.
+     * @return The index of the last adjustment record processed and the total rewards earned.
+     */
+    function caculateRewards(uint256 _hashRate, uint256 _recentAdjustIndex, uint256 _lastTimestamp, uint256 _targetTimestamp) public view returns (uint256, uint256) {
+        uint256 rewards = 0;
+        uint256 occurredLatestIndex = getOccurredOutputFactorsLength() - 1;
+        for (uint256 i = _recentAdjustIndex; i <= occurredLatestIndex; i++) {
+            AdjustRecord memory record = adjustRecords[i];
             if (i < occurredLatestIndex) {
                 AdjustRecord memory nextRecord = adjustRecords[i + 1];
                 if (nextRecord.timestamp > _targetTimestamp) {
-                    rewards += rewardByHashRate(hashRate, record.outputFactor, _targetTimestamp - lastTimestamp);
+                    rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _lastTimestamp);
                     return (i, rewards);
                 }
-                rewards += rewardByHashRate(hashRate, record.outputFactor, nextRecord.timestamp - lastTimestamp);
-                lastTimestamp = nextRecord.timestamp;
+                rewards += rewardByHashRate(_hashRate, record.outputFactor, nextRecord.timestamp - _lastTimestamp);
+                _lastTimestamp = nextRecord.timestamp;
             }
             if (i == occurredLatestIndex) {
-                rewards += rewardByHashRate(hashRate, record.outputFactor, _targetTimestamp - lastTimestamp);
+                rewards += rewardByHashRate(_hashRate, record.outputFactor, _targetTimestamp - _lastTimestamp);
             }
         }
         return (occurredLatestIndex, rewards);

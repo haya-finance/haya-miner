@@ -88,7 +88,7 @@ contract Miner is ERC1155, Ownable2Step {
      * @param amount The amount of tokens to be minted.
      * @param data Additional data to be passed during the minting process.
      */
-    function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyFactory() {
+    function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyFactory {
         _mint(account, id, amount, data);
     }
 

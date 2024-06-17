@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 */
 contract HayaStakingContract is ReentrancyGuard {
 
-
     /**
      * @dev Minimum stake time in seconds.
      */
