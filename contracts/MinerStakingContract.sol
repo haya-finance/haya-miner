@@ -222,7 +222,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      * @notice This function can only be called when the contract is not paused.
      */
     function claim(uint256[] calldata _minerIndexes, uint256[] calldata _targetTimestamp) external nonReentrant whenNotPaused {
-        require(_minerIndexes.length == _targetTimestamp.length, "MinerStakingContract: Invalid input length");
+        require(_minerIndexes.length == _targetTimestamp.length && _minerIndexes.length > 0, "MinerStakingContract: Invalid input length");
         for (uint256 i = 0; i < _minerIndexes.length; i++) {
             require(_targetTimestamp[i] < block.timestamp, "MinerStakingContract: Invalid target timestamp");
             _claimRewards(msg.sender, _minerIndexes[i], _targetTimestamp[i]);

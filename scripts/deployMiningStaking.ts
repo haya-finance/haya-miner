@@ -7,8 +7,8 @@ require("dotenv").config();
 async function main() {
   const CONTRACTS_OWNER = process.env.CONTRACTS_OWNER as string;
   const OUTPUT_FACTOR = 1;
-  const HAYA_TOKEN_POOL = "0xc9C063A0F88f49Dfbe9c7391F54045bAE7dFcfd8";
-  const MINER_CONTRACT = "0xC0dBf8297bc5658576c3AD312dCDD50de21dbD82";
+  const HAYA_TOKEN_POOL = "";
+  const MINER_CONTRACT = "";
   const launchConfig = [
     OUTPUT_FACTOR,
     MINER_CONTRACT,
