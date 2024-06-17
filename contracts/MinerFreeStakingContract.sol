@@ -36,7 +36,7 @@ contract MinerFreeStakingContract is Initializable, Ownable2StepUpgradeable, ERC
      * The key is the address and the value is an instance of the MiningStatus struct.
      * This mapping is private, meaning it can only be accessed within the contract.
      */
-    mapping(address => MiningStatus) public miningStatuses;
+    mapping(address => MiningStatus) private miningStatuses;
 
     /**
      * @dev A mapping that stores the support status of miner types for each address and uint256 value.
@@ -152,6 +152,28 @@ contract MinerFreeStakingContract is Initializable, Ownable2StepUpgradeable, ERC
         status.latestClaimedTime = _targetTimestamp;
         rewordsPool.claim(msg.sender, rewards);
         emit RewardsClaimed(msg.sender, rewards, _targetTimestamp);
+    }
+
+    /**
+     * @dev Retrieves the mining status of an account.
+     * @param _account The address of the account to check.
+     * @return The MiningStatus struct containing the mining status of the account.
+     */
+    function getMiningStatus(address _account) external view returns (MiningStatus memory) {
+        return miningStatuses[_account];
+    }
+
+    /**
+     * @dev Retrieves the unclaimed rewards for a given account up to a target timestamp.
+     * @param _account The address of the account.
+     * @param _targetTimestamp The target timestamp up to which the rewards are calculated.
+     * @return The amount of unclaimed rewards.
+     */
+    function getUnclaimedRewards(address _account, uint256 _targetTimestamp) external view returns (uint256) {
+        MiningStatus storage status = miningStatuses[_account];
+        require(_targetTimestamp <= status.endTime && _targetTimestamp > status.latestClaimedTime, "MinerFreeStakingContract: Invalid target timestamp");
+        (, uint256 rewards) = minerStakingContract.caculateRewards(HASH_RATE_FREE, status.recentAdjustIndex, status.latestClaimedTime, _targetTimestamp);
+        return rewards;
     }
 
     /**

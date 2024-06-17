@@ -120,19 +120,20 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
 
     /**
      * @dev Emitted when a miner starts staking.
-     * @param miner The address of the user.
+     * @param account The address of the account that started staking.
+     * @param index The index of the miner.
      * @param minerType The type of the miner.
      */
-    event MinerStarted(address indexed miner, MinerType indexed minerType);
+    event MinerStarted(address indexed account, uint256 index, MinerType indexed minerType);
 
     /**
      * @dev Emitted when a miner claims rewards.
-     * @param miner The address of the user.
+     * @param account The address of the user.
      * @param index The index of the rewards.
      * @param rewards The amount of rewards claimed.
      * @param targetTimestamp The target timestamp for claiming rewards.
      */
-    event RewardsClaimed(address indexed miner, uint256 index, uint256 rewards, uint256 targetTimestamp);
+    event RewardsClaimed(address indexed account, uint256 index, uint256 rewards, uint256 targetTimestamp);
 
 
     /**
@@ -435,7 +436,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
             latestClaimedTime: block.timestamp,
             rewardsClaimed: 0
         }));
-        emit MinerStarted(msg.sender, _type);
+        emit MinerStarted(msg.sender, miningStatuses[account].length - 1, _type);
     }
 
     /**

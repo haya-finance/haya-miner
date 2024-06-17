@@ -187,7 +187,7 @@ describe("MinerFreeStakingContract", function () {
         .connect(account1)
         .mining(minerContract.address, 0n)
     ).to.be.rejectedWith("MinerFreeStakingContract: Already mining");
-    const miningStatus = await minerFreeStakingContract.miningStatuses(
+    const miningStatus = await minerFreeStakingContract.getMiningStatus(
       account1.account.address
     );
     await expect(
@@ -216,7 +216,7 @@ describe("MinerFreeStakingContract", function () {
       minerFreeStakingContract.connect(account1).claim(miningStatus.endTime)
     ).to.be.rejectedWith("MinerFreeStakingContract: Invalid target timestamp");
 
-    const miningStatusAfter = await minerFreeStakingContract.miningStatuses(
+    const miningStatusAfter = await minerFreeStakingContract.getMiningStatus(
       account1.account.address
     );
     expect(miningStatusAfter.rewardsClaimed).to.equal(6048000000n);

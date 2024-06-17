@@ -11,7 +11,8 @@
       "clean": "hardhat clean",
       "test": "hardhat test",
       "compile": "hardhat compile",
-      "deploy": "hardhat run ./scripts/deploy.ts --network sepolia"
+      "deploy": "hardhat run ./scripts/deployDefender.ts --network sepolia",
+      "deploy:production": "hardhat run ./scripts/deployDefender.ts --network production"
     }
   }
   
