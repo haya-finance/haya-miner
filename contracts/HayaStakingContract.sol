@@ -32,14 +32,14 @@ contract HayaStakingContract is ReentrancyGuard {
 
     /**
      * @dev Enum representing the different levels of staking.
-     * - None: Level 0
-     * - SeniorAgent: Level 1
-     * - GlobalAgent: Level 2
+     * - Agent: Level 0
+     * - Partner: Level 1
+     * - GlobalPartner: Level 2
      */
     enum Level {
-        None,
-        SeniorAgent,
-        GlobalAgent
+        Agent,
+        Partner,
+        GlobalPartner
     }
 
     /**
