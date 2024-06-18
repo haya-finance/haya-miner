@@ -68,8 +68,8 @@ contract HayaStakingContract is ReentrancyGuard {
      */
     constructor(address _token) {
         stakeToken = IERC20(_token);
-        levelAmounts[Level.SeniorAgent] = 10_000 ether;
-        levelAmounts[Level.GlobalAgent] = 100_000 ether;
+        levelAmounts[Level.Partner] = 10_000 ether;
+        levelAmounts[Level.GlobalPartner] = 100_000 ether;
     }
 
     /**
@@ -105,13 +105,13 @@ contract HayaStakingContract is ReentrancyGuard {
      */
     function unstake() external nonReentrant {
         Stake memory stake = stakes[msg.sender];
-        require(stake.level > Level.None, "StakeContract: No stake found");
+        require(stake.level > Level.Agent, "StakeContract: No stake found");
         require(stake.unlockTime <= block.timestamp, "StakeContract: Stake is still locked");
         Level oldLevel = stake.level;
         stakeToken.transfer(msg.sender, levelAmounts[stake.level]);
 
         delete stakes[msg.sender];
-        emit LevelChanged(msg.sender, uint8(oldLevel), uint8(Level.None));
+        emit LevelChanged(msg.sender, uint8(oldLevel), uint8(Level.Agent));
     }
 
     /**
@@ -121,7 +121,7 @@ contract HayaStakingContract is ReentrancyGuard {
      * @return The amount of tokens required to upgrade.
      */
     function calculateUpgradeCost(Level currentLevel, Level newLevel) public view returns (uint256) {
-        require(newLevel > currentLevel && newLevel <= Level.GlobalAgent, "StakeContract: Invalid level upgrade");
+        require(newLevel > currentLevel && newLevel <= Level.GlobalPartner, "StakeContract: Invalid level upgrade");
         uint256 upgradeCost = levelAmounts[Level(newLevel)] - levelAmounts[Level(currentLevel)];
         return upgradeCost;
     }
