@@ -5,7 +5,7 @@ async function main() {
   const CONTRACTS_OWNER = process.env.CONTRACTS_OWNER as string;
   const StandardNFTMock = await ethers.getContractFactory("StandardNFTMock");
   const token = await defender.deployContract(StandardNFTMock, [
-    "",
+    "ipfs://QmQy9GRDCpW5aRtevy9NKHocyS4p7VkFmgwdxzZkFZkKMf/{id}",
     CONTRACTS_OWNER,
   ]);
   console.log("wait deployed...");
@@ -16,7 +16,10 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     await run("verify:verify", {
       address: await token.getAddress(),
-      constructorArguments: ["", CONTRACTS_OWNER],
+      constructorArguments: [
+        "ipfs://QmQy9GRDCpW5aRtevy9NKHocyS4p7VkFmgwdxzZkFZkKMf/{id}",
+        CONTRACTS_OWNER,
+      ],
     });
   } catch (error) {
     console.log(error);
