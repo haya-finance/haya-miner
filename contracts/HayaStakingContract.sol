@@ -68,7 +68,7 @@ contract HayaStakingContract is ReentrancyGuard {
      */
     constructor(address _token) {
         stakeToken = IERC20(_token);
-        levelAmounts[Level.Partner] = 10_000 ether;
+        levelAmounts[Level.Partner] = 2_000 ether;
         levelAmounts[Level.GlobalPartner] = 100_000 ether;
     }
 
