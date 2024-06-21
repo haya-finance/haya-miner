@@ -126,12 +126,12 @@ describe("HayaStakeContract", function () {
       account: account1.account,
     });
     const balance = await token.read.balanceOf([account1.account.address]);
-    expect(balance).to.equal(parseEther("90000"));
+    expect(balance).to.equal(parseEther("98000"));
     await stakeContract.write.upgradeLevel([2], {
       account: account1.account,
     });
     const newBalance = await token.read.balanceOf([account1.account.address]);
-    expect(balance - newBalance).to.equal(parseEther("90000"));
+    expect(balance - newBalance).to.equal(parseEther("98000"));
   });
 
   it("Should refresh lock time", async function () {
