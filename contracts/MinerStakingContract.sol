@@ -21,6 +21,7 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      */
     uint256 public constant MAX_MINING_TIME = 180 days;
 
+
     /**
      * @dev Interface for the ERC1155 miner contract.
      */
@@ -62,6 +63,16 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      * This array is private and can only be accessed within the `MinerStakingContract` contract.
      */
     AdjustRecord[] private adjustRecords;
+
+    /**
+     * @dev The amount of fee required to claim for each miner.
+     */
+    uint256 public claimFeeForEachMiner;
+
+    /**
+     * @dev The address where the claim fee will be sent to.
+     */
+    address public claimFee2Address;
 
     /**
     * @dev Represents a staking contract for miners.
@@ -134,7 +145,6 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      * @param targetTimestamp The target timestamp for claiming rewards.
      */
     event RewardsClaimed(address indexed account, uint256 index, uint256 rewards, uint256 targetTimestamp);
-
 
     /**
      * @dev Emitted when the output factor is dropped.
@@ -221,8 +231,13 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
      * @notice The target timestamp must be less than the current block timestamp.
      * @notice This function can only be called when the contract is not paused.
      */
-    function claim(uint256[] calldata _minerIndexes, uint256[] calldata _targetTimestamp) external nonReentrant whenNotPaused {
+    function claim(uint256[] calldata _minerIndexes, uint256[] calldata _targetTimestamp) external payable nonReentrant whenNotPaused {
         require(_minerIndexes.length == _targetTimestamp.length && _minerIndexes.length > 0, "MinerStakingContract: Invalid input length");
+        if (claimFeeForEachMiner > 0) {
+            require(msg.value == claimFeeForEachMiner * _minerIndexes.length, "MinerStakingContract: Invalid claim fee");
+            require(claimFee2Address != address(0), "MinerStakingContract: Invalid claim fee address");
+            payable(claimFee2Address).transfer(msg.value);
+        }
         for (uint256 i = 0; i < _minerIndexes.length; i++) {
             require(_targetTimestamp[i] < block.timestamp, "MinerStakingContract: Invalid target timestamp");
             _claimRewards(msg.sender, _minerIndexes[i], _targetTimestamp[i]);
@@ -275,6 +290,19 @@ contract MinerStakingContract is Initializable, Ownable2StepUpgradeable, ERC1155
     function setEndTime(uint256 _endTime) public onlyOwner {
         endTime = _endTime;
         emit EndTimeUpdated(_endTime);
+    }
+
+    /**
+     * @dev Sets the claim fee for each miner and the address to receive the claim fee.
+     * @param _claimFeeForEachMiner The amount of claim fee for each miner.
+     * @param _claimFee2Address The address to receive the claim fee.
+     * @notice Only the contract owner can call this function.
+     * @notice The claim fee address must not be the zero address.
+     */
+    function setClaimFee(uint256 _claimFeeForEachMiner, address _claimFee2Address) public onlyOwner {
+        require(_claimFee2Address != address(0), "MinerStakingContract: Invalid claim fee address");
+        claimFeeForEachMiner = _claimFeeForEachMiner;
+        claimFee2Address = _claimFee2Address;
     }
 
     /**

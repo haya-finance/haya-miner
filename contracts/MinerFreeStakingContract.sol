@@ -142,9 +142,13 @@ contract MinerFreeStakingContract is Initializable, Ownable2StepUpgradeable, ERC
      * @notice The rewards are transferred from the rewards pool to the miner's address.
      * @notice Emits a `RewardsClaimed` event with the miner's address, rewards amount, and target timestamp.
      */
-    function claim(uint256 _targetTimestamp) external nonReentrant whenNotPaused {
+    function claim(uint256 _targetTimestamp) external payable nonReentrant whenNotPaused {
         MiningStatus storage status = miningStatuses[msg.sender];
         require(status.hashRate > 0, "MinerFreeStakingContract: Not mining");
+        if (minerStakingContract.claimFeeForEachMiner() > 0) {
+            require(msg.value == minerStakingContract.claimFeeForEachMiner(), "MinerFreeStakingContract: Invalid fee");
+            payable(minerStakingContract.claimFee2Address()).transfer(msg.value);
+        }   
         require(_targetTimestamp < block.timestamp && _targetTimestamp <= status.endTime && _targetTimestamp > status.latestClaimedTime, "MinerFreeStakingContract: Invalid target timestamp");
         (uint256 recentAdjustIndex, uint256 rewards) = minerStakingContract.caculateRewards(status.hashRate, status.recentAdjustIndex, status.latestClaimedTime, _targetTimestamp);
         status.rewardsClaimed += rewards;
@@ -267,4 +271,16 @@ interface IMinerStakingContract {
      * @return The end time of the staking contract.
      */
     function endTime() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of fees that can be claimed for each miner.
+     * @return The amount of fees that can be claimed for each miner.
+     */
+    function claimFeeForEachMiner() external view returns (uint256);
+
+    /**
+     * @dev Returns the address where the fee can be claimed.
+     * @return The address where the fee can be claimed.
+     */
+    function claimFee2Address() external view returns (address);
 }
