@@ -70,7 +70,7 @@ describe("MinerStakingContract", function () {
     await hayaContract.write.approve([poolContract.address, maxUint256]);
     await poolContract.write.deposit([parseEther("10000000000000000")]);
 
-    const miningOutputFactor = 1;
+    const miningOutputFactor = 803571429;
     const minerStakingStartTime =
       BigInt(await time.latest()) + BigInt(ONE_WEEK_IN_SECS);
     const minerStakingEndTime =
@@ -270,6 +270,35 @@ describe("MinerStakingContract", function () {
         .connect(account1)
         .claim([0n], [BigInt(await time.latest()) + 10n])
     ).to.be.rejectedWith("MinerStakingContract: Invalid target timestamp");
+  });
+
+  it("should claim rewards correct 7 days and outputs 803571429", async function () {
+    const {
+      minerStakingContract,
+      account1,
+      hayaContract,
+      minerStakingStartTime,
+    } = await loadFixture(deployMinerStakingContractFixture);
+    await time.increaseTo(minerStakingStartTime);
+    await minerStakingContract.connect(account1).batchMining([0n], [1n]);
+    const hayaBalanceBefore = await hayaContract.read.balanceOf(
+      [account1.account.address],
+      { account: account1.account }
+    );
+    const status = await minerStakingContract.getMiningStatus(
+      account1.account.address,
+      0,
+      0
+    );
+    await time.increase(ONE_WEEK_IN_SECS * 2);
+    await minerStakingContract
+      .connect(account1)
+      .claim([0n], [status[0][1] + BigInt(ONE_WEEK_IN_SECS)]);
+    const hayaBalanceAfter = await hayaContract.read.balanceOf(
+      [account1.account.address],
+      { account: account1.account }
+    );
+    expect(hayaBalanceAfter - hayaBalanceBefore).to.equal(4860000002592000000n);
   });
 
   it("should fail to claim and mining when paused", async function () {
