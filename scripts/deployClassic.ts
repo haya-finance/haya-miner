@@ -12,6 +12,7 @@ async function main() {
     HAYA_CONTRACT_ADDRESS,
     MINER_META_URI,
     PUBLIC_SALE_START_TIME,
+    CLAIM_FEE_RECIPIENT,
     SALE_BENIFICIARIES,
     MINER_STAKING_START_TIME,
     MINER_STAKING_OUTPUT_FACTOR,
@@ -180,7 +181,11 @@ async function main() {
     console.log(error);
   }
   console.log("--------------------\n");
-
+  console.log("---------Miner claim add fee-----------");
+  await minerStakingContract.setClaimFee(
+    20000000000000n,
+    CLAIM_FEE_RECIPIENT as string
+  );
   console.log("---------HayaTokenPool Add Claimer-----------");
   await hayaTokenPool.write.addClaimer([minerStakingAddress]);
   console.log("minerStakingAddress added\n");
